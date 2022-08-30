@@ -45,6 +45,13 @@
         Items: {{ this.response.totalItems }}
       </p>
       <div>
+        <div v-if="this.players" class="d-flex">
+          <h5>Ordenar</h5>
+          <div class="pageClass d-flex ms-2" @click="handleSearchOrder()">
+            <font-awesome-icon icon="fa-solid fa-arrow-down" />
+            <font-awesome-icon icon="fa-solid fa-arrow-up" />
+          </div>
+        </div>
         <div class="row">
           <div
             class="col-sm-6"
@@ -120,6 +127,8 @@ export default defineComponent({
       activePage: "",
       errorSearch: false,
       errorMsg: "Todos los campos son obligatorios",
+      players: false,
+      order: "asc",
     };
   },
   methods: {
@@ -137,6 +146,7 @@ export default defineComponent({
     },
     async validate(type: string) {
       if (type === "team") {
+        if (this.players) this.players = false;
         const resp = await this.searchTeam({ input: { name: this.search } });
         if (!resp) return;
         if (!resp.data) return;
@@ -150,6 +160,7 @@ export default defineComponent({
         });
         if (!resp) return;
         if (!resp.data) return;
+        this.players = true;
         this.resp = true;
         this.response = resp.data.searchPlayer;
         const { totalPages, page } = this.response;
@@ -186,6 +197,18 @@ export default defineComponent({
         const total = index + 1;
         this.page[index] = total.toString();
       }
+    },
+    async handleSearchOrder() {
+      if (this.order === "asc") this.order = "desc";
+      if (this.order === "desc") this.order = "asc";
+      const page = parseInt(this.activePage);
+      const resp = await this.searchPlayer({
+        input: { search: this.search, page, order: this.order },
+      });
+      if (!resp) return;
+      if (!resp.data) return;
+      console.log(resp.data.searchPlayer);
+      this.response = resp.data.searchPlayer;
     },
   },
 });
